@@ -138,7 +138,11 @@
        <tr>
         <td>
     <span style="color:lightgrey;">Character Name:</span> {avatar.name}<br>
-    <span style="color:lightgrey;">Empire:</span> {getFactionName(avatar.faction)}
+    <span style="color:lightgrey;">Empire:</span> {getFactionName(avatar.faction)}<br>
+    <span style="color:lightgrey;">Outfit:</span>
+    {#if avatar.outfit_id}
+      <a href="/outfit/{avatar.outfit_id}">{avatar.outfit}</a>
+    {/if}<br>
         </td>
         <td><img height="60" src={getFactionIcon(avatar.faction)} alt={avatar.faction}/></td>
         </tr>

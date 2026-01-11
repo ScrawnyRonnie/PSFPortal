@@ -380,9 +380,16 @@ export async function get_weaponstats_by_avatar(id) {
 }
 
 export async function get_avatar(id) {
-	try {
-		const avatar = await pool.query('SELECT id, name, faction_id, bep, cep, gender_id, head_id FROM avatar WHERE id=$1', [id])
-		return avatar.rows[0];
+    try {
+        const avatar = await pool.query(
+        'SELECT a.id, a.name, a.faction_id, a.bep, a.cep, a.gender_id, a.head_id,' +
+        ' o.id AS outfit_id, o.name AS outfit_name' +
+        ' FROM avatar a' +
+        ' LEFT JOIN outfitmember om ON om.avatar_id = a.id' +
+        ' LEFT JOIN outfit o ON o.id = om.outfit_id' +
+        ' WHERE a.id = $1',
+      [id])
+        return avatar.rows[0];
 	} catch (e) {
 		if (e.code)
 			e.code = pg_error_inv[e.code]
@@ -436,6 +443,92 @@ export async function get_top_kills_byDate() {
 			e.code = pg_error_inv[e.code]
 		throw e;
 	}
+}
+
+export async function get_top_outfits() {
+    try {
+    const outfits = await pool.query(
+    'WITH OutfitData AS (' +
+    ' SELECT o.id AS outfit_id,' +
+    '        o.faction,' +
+    '        o.name AS outfit_name,' +
+    '        a.id AS leader_id, a.name AS leader_name,' +
+    '        COUNT(om.avatar_id)::int AS members,' +
+    '        (op.points / 100.0)::int AS points' +
+    '   FROM outfit o' +
+    '   JOIN avatar a ON a.id = o.owner_id' +
+    '   LEFT JOIN outfitmember om ON om.outfit_id = o.id' +
+    '   LEFT JOIN outfitpoint_mv op ON op.outfit_id = o.id' +
+    '   GROUP BY o.id, o.faction, o.name, a.name, a.id, op.points' +
+  ') ' +
+  'SELECT outfit_id, faction, outfit_name, leader_name, leader_id, members, points ' +
+  'FROM OutfitData ' +
+  'ORDER BY points DESC')
+    return outfits.rows;
+    } catch (e) {
+      	if (e.code)
+      		e.code = pg_error_inv[e.code]
+      	throw e;
+    }
+}
+
+export async function get_outfit(id) {
+  try {
+const outfit = await pool.query(
+  'WITH OutfitData AS (' +
+    ' SELECT o.id AS outfit_id, o.faction, o.name AS outfit_name, o.created,' +
+    '        a.id AS leader_id,' +
+    '        a.name AS leader_name,' +
+    '        COUNT(om.avatar_id)::int AS members,' +
+    '        (op.points / 100.0)::int AS points' +
+    '   FROM outfit o ' +
+    '   JOIN avatar a ON a.id = o.owner_id ' +
+    '   LEFT JOIN outfitmember om ON om.outfit_id = o.id ' +
+    '   LEFT JOIN outfitpoint_mv op ON op.outfit_id = o.id ' +
+    '   WHERE o.id = $1 ' +
+    '   GROUP BY o.created, o.id, o.faction, o.name, a.id, a.name, op.points) ' +
+  'SELECT outfit_id, faction, outfit_name, leader_id, leader_name, members, points, created ' +
+  'FROM OutfitData',
+  [id])
+    return outfit.rows[0];
+    } catch (e) {
+        if (e.code)
+            e.code = pg_error_inv[e.code];
+        throw e;
+    }
+}
+
+export async function get_outfit_members(id) {
+  try {
+const members = await pool.query(
+      'SELECT av.id AS avatar_id, av.bep, av.cep,' +
+      '       av.name AS avatar_name,' +
+      '       om.rank AS rank_num,' +
+      '       CASE om.rank ' +
+      '         WHEN 0 THEN COALESCE(o.rank0, \'Fodder\') ' +
+      '         WHEN 1 THEN COALESCE(o.rank1, \'Soldier\') ' +
+      '         WHEN 2 THEN COALESCE(o.rank2, \'Commando\') ' +
+      '         WHEN 3 THEN COALESCE(o.rank3, \'Master at Arms\') ' +
+      '         WHEN 4 THEN COALESCE(o.rank4, \'Tactical Officer\') ' +
+      '         WHEN 5 THEN COALESCE(o.rank5, \'Strategic Officer\') ' +
+      '         WHEN 6 THEN COALESCE(o.rank6, \'Chief Officer\') ' +
+      '         WHEN 7 THEN COALESCE(o.rank7, \'Outfit Leader\') ' +
+      '       END AS rank_title,' +
+      '       COALESCE((op.points / 100.0)::int, 0) AS points,' +
+      '       om.created AS joined' +
+      '  FROM outfitmember om ' +
+      '  JOIN avatar av ON av.id = om.avatar_id ' +
+      '  JOIN outfit o ON o.id = om.outfit_id ' +
+      '  LEFT JOIN outfitpoint op ON op.avatar_id = om.avatar_id ' +
+      ' WHERE om.outfit_id = $1 ' +
+      ' ORDER BY points DESC, avatar_name ASC',
+      [id])
+    return members.rows;
+    } catch (e) {
+        if (e.code)
+            e.code = pg_error_inv[e.code];
+        throw e;
+    }
 }
 
 export async function get_characters_by_account(account_id) {
