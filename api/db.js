@@ -358,7 +358,7 @@ export async function get_character_batch_for_stats(batch, sort, order) {
 
 	try {
 		const char_count = await get_row_count(CHARACTER.THIS);
-		const chars = await pool.query(`SELECT id, name, faction_id, bep, cep FROM avatar ORDER BY ${to_sql(sort)} ${to_sql(order)} OFFSET $1*1000 LIMIT 1000`, values);
+		const chars = await pool.query(`SELECT id, name, faction_id, bep, cep FROM avatar ORDER BY ${to_sql(sort)} ${to_sql(order)} OFFSET $1*500 LIMIT 500`, values);
 
 		return chars.rows;
 	} catch (e) {
@@ -405,7 +405,8 @@ export async function get_top_kills() {
          ' INNER JOIN avatar ON killactivity.killer_id = avatar.id' +
          ' WHERE exp > 0' +
          ' GROUP BY killactivity.killer_id, avatar.name, avatar.bep, avatar.cep, avatar.faction_id, avatar.gender_id, avatar.head_id' +
-         ' ORDER BY count(killer_id) DESC')
+         ' ORDER BY count(killer_id) DESC' +
+         ' LIMIT 500')
 		return kills.rows;
 	} catch (e) {
 		if (e.code)

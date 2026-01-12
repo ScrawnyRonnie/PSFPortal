@@ -23,7 +23,7 @@
     try {
       const resp = await axios.get("/api/char_stats_bep/0");
       const stats = resp.data;
-      bepPlayers = stats.players.filter(p => p.bep > 14999);
+      bepPlayers = stats.players;
       // Reset alert message if needed
       alert.message("");
     } catch (e) {
