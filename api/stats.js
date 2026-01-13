@@ -78,6 +78,38 @@ api.get('/top_kills_byDate', async (req, res, next) => {
 	}
 });
 
+api.get('/top_outfits', async (req, res, next) => {
+	try {
+		const outfits = await db.get_top_outfits();
+		res.status(200).json({ outfits: outfits });
+	} catch (e) {
+		console.log(e);
+		res.status(500).json({ message: 'error' });
+	}
+});
+
+api.get('/outfit/:outfit', async (req, res, next) => {
+	const fit = req.params.outfit
+	try {
+		const outfit = await db.get_outfit(fit);
+		res.status(200).json(outfit);
+	} catch (e) {
+		console.log(e);
+		res.status(500).json({ message: 'error' });
+	}
+});
+
+api.get('/outfit/:outfit/members', async (req, res, next) => {
+	const fit = req.params.outfit
+	try {
+		const members = await db.get_outfit_members(fit);
+		res.status(200).json({ members: members });
+	} catch (e) {
+		console.log(e);
+		res.status(500).json({ message: 'error' });
+	}
+});
+
 api.get('/weaponstats/:avatar', async (req, res, next) => {
 	const avatar = req.params.avatar;
 
@@ -102,7 +134,9 @@ api.get('/avatar/:avatar', async (req, res, next) => {
 		cep: avatarData.cep,
 		faction: avatarData.faction_id,
 		gender: avatarData.gender_id,
-		head: avatarData.head_id
+		head: avatarData.head_id,
+		outfit: avatarData.outfit_name,
+		outfit_id: avatarData.outfit_id
 		 });
 	} catch (e) {
 		console.log(e);

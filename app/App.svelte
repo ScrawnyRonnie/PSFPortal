@@ -28,6 +28,7 @@ import AdminPanel from './views/AdminPanel.svelte';
 import CharacterList from './views/CharacterList.svelte';
 import Leaderboard from './views/Leaderboard.svelte';
 import Avatar from './views/Avatar.svelte'
+import Outfit from './views/Outfit.svelte'
 
 // Defined by webpack
 let APP_VERSION = __VERSION__;
@@ -106,6 +107,7 @@ page("/avatar/:id", setRoute(Avatar));
 page("/admin", setRoute(AdminPanel));
 page("/profile", setRoute(Profile, true));
 page("/user/:id", setRoute(Profile, true));
+page("/outfit/:id", setRoute(Outfit));
 if (process.env.NODE_ENV !== 'production') {
 	console.log("Development mode active");
 	const cc = await import('./views/components.svelte');

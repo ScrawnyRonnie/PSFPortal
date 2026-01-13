@@ -8,12 +8,14 @@
   get_BEPleaderboard();
   get_CEPleaderboard();
   get_kills();
+  get_outfits();
   get_topDateKills();
   });
 
   let bepPlayers = [];
   let cepPlayers = [];
   let kills = [];
+  let outfits = [];
   let dateKills = [];
   let alert;
 
@@ -34,7 +36,7 @@
     try {
       const resp = await axios.get("/api/char_stats_cep/0");
       const stats = resp.data;
-      cepPlayers = stats.players;
+      cepPlayers = stats.players.filter(p => p.cep > 0);
       // Reset alert message if needed
       alert.message("");
     } catch (e) {
@@ -48,6 +50,19 @@
       const resp = await axios.get("/api/top_kills");
       const stats = resp.data;
       kills = stats.kills;
+      // Reset alert message if needed
+      alert.message("");
+    } catch (e) {
+      console.log(e);
+      alert.message("Failed to fetch stats from server");
+    }
+  }
+
+  async function get_outfits() {
+    try {
+      const resp = await axios.get("/api/top_outfits");
+      const stats = resp.data;
+      outfits = stats.outfits;
       // Reset alert message if needed
       alert.message("");
     } catch (e) {
@@ -85,6 +100,9 @@
   </li>
   <li class="nav-item">
     <a class="nav-link" id="cr-tab" data-toggle="tab" href="#cr" role="tab" aria-controls="cr" aria-selected="false">Command Rank</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="outfits-tab" data-toggle="tab" href="#outfits" role="tab" aria-controls="outfits" aria-selected="false">Outfits</a>
   </li>
   <li class="nav-item">
     <a class="nav-link" id="top-tab" data-toggle="tab" href="#top" role="tab" aria-controls="top" aria-selected="false">Top X</a>
@@ -166,7 +184,32 @@
   </table>
 </div>
 
-  <div class="tab-pane" id="top" role="tabpanel" aria-labelledby="top-tab">
+<div class="tab-pane" id="outfits" role="tabpanel" aria-labelledby="outfits-tab">
+    <table class="table table-sm table-dark table-responsive-md table-striped table-hover">
+      <thead class="thead-light">
+          <th>#</th>
+          <th>Name</th>
+          <th>Leader</th>
+          <th>Members</th>
+          <th>Points</th>
+      </thead>
+      <tbody>
+        {#each outfits as outfit, $index}
+          <tr>
+            <td>{$index + 1}</td>
+            <td>
+            <img height="24" src={getFactionIcon(outfit.faction)} alt={outfit.faction} />
+            <a href="/outfit/{outfit.outfit_id}">{outfit.outfit_name}</a></td>
+            <td><a href="/avatar/{outfit.leader_id}">{outfit.leader_name}</a></td>
+            <td>{outfit.members}</td>
+            <td>{outfit.points}</td>
+          </tr>
+        {/each}
+     </tbody>
+  </table>
+</div>
+
+<div class="tab-pane" id="top" role="tabpanel" aria-labelledby="top-tab">
   <span style="color:lightgrey; text-align:center;">Top 50 Characters Most Daily Kills</span>
  <table class="table table-sm table-dark table-responsive-md table-striped table-hover">
   <thead class="thead-light">
